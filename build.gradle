@@ -1,0 +1,111 @@
+
+buildscript {
+	ext {
+		springBootVersion = '2.0.4.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "gradle.plugin.com.github.alexeylisyutenko:windows-service-plugin:1.1.0"
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+//plugins {
+//	id "org.springframework.boot" version "2.0.5.RELEASE"
+//	id "com.github.alexeylisyutenko.windows-service-plugin" version "1.1.0"
+//}
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "com.github.alexeylisyutenko.windows-service-plugin"
+
+
+mainClassName = 'pl.artur.microservice.MicroserviceApplication23'
+
+windowsService {
+	architecture = 'amd64'
+	displayName = 'TestService'
+	description = 'Service generated with using gradle plugin'
+	startClass = 'MicroserviceApplication'
+	startMethod = 'main'
+	startParams = 'start'
+	stopClass = 'MicroserviceApplication'
+	stopMethod = 'main'
+	stopParams = 'stop'
+	startup = 'auto'
+}
+
+//IF we want to have 2 jar files, First for normal jar, second for SpringBootJar
+//By default, adding spring-boot-gradle-plugin will disable creating normal jars and make SpringBoot ones.
+/*
+jar {
+	enabled = true
+}
+bootJar {
+	classifier = 'boot'
+}
+*/
+
+group = 'pl.artur.'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+mainClassName = "pl.artur.microservice.MicroserviceApplication"
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.2'
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.security:spring-security-test')
+}
+
+
+
+
+
+
+
+
+
+
+//Example of Jar Task + putting that task before assemble task in java plugin
+
+task jarSources(type: Jar){
+	from sourceSets.main.allSource
+	classifier = 'src'
+}
+
+assemble.dependsOn jarSources
+
+//Example of custom task
+
+class WelcomingTask extends DefaultTask {
+	def quest
+
+	@TaskAction
+	def welcome() {
+		println "--- Hello there, $quest ---"
+	}
+}
+
+task GeneralKenobi(type: WelcomingTask){
+	quest = "General Kenobi"
+}
+
+//Using variables from project.class
+setDescription("myProject")
+task taskProperties {
+
+	println "Description of project $project.name: " + project.description
+}
